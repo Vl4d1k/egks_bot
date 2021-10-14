@@ -55,13 +55,13 @@ def bot_actions():
 
     @bot.message_handler(commands=['start', 'help'])
     def send_welcome(message):
-        bot.reply_to(message, 'Привет, чтобы получить данные о карте ЕГКС просто отправь боту ее номер.')
+        bot.reply_to(message, 'Привет, чтобы получить данные о карте ЕГКС просто отправь боту ее номер в формате:\n xxx xxx xxx либо xxx xxx (без префикса из 000).')
         logger.info(f'Said hi to user [{message.from_user.username}] with id: [{message.chat.id}]')
     
     @bot.message_handler(content_types=['text'])
     def get_egks_info(message):
         
-        card_number = message.text
+        card_number = message.text.replace(" ", "")
         chat_id = message.chat.id
         first_name = message.from_user.first_name 
         last_name = message.from_user.last_name
