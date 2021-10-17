@@ -9,19 +9,21 @@ import logging
 import time
 import telebot
 import os
+from dotenv import load_dotenv
 
-#todo брать API_TOKEN из env файла
 #todo исправить логирование
 #todo вынести проверку автора в декоратор
 #todo сделать автодеплой на сервер
 #todo добавить карточки для созранения карт
 
-API_TOKEN = ''
+load_dotenv()
 
-BOT_INTERVAL = 10
-BOT_TIMEOUT = 5
+API_TOKEN = os.getenv('API_TOKEN')
 
-AUTHOR_ID = 423227532
+BOT_INTERVAL = os.getenv('BOT_INTERVAL')
+BOT_TIMEOUT = os.getenv('BOT_TIMEOUT')
+
+AUTHOR_ID = os.getenv('AUTHOR_ID')
 
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger('main_logger')
