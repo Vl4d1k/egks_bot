@@ -10,6 +10,11 @@ import time
 import telebot
 import os
 
+#todo брать API_TOKEN из env файла
+#todo исправить логирование
+#todo вынести проверку автора в декоратор
+#todo сделать автодеплой на сервер
+
 API_TOKEN = ''
 
 BOT_INTERVAL = 10
@@ -17,22 +22,14 @@ BOT_TIMEOUT = 5
 
 AUTHOR_ID = 423227532
 
-current_path = os.path.dirname(os.path.realpath(__file__))
-
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger('main_logger')
 
-logger = logging.getLogger('simple_example')
-logger.setLevel(logging.INFO)
-
-error_logger = logging.FileHandler(os.path.join(current_path, 'error.log'))
-error_logger.setLevel(logging.ERROR)
-error_logger.setFormatter(formatter)
-
+current_path = os.path.dirname(os.path.realpath(__file__))
 info_logger = logging.FileHandler(os.path.join(current_path, 'info.log'))
 info_logger.setLevel(logging.INFO)
 info_logger.setFormatter(formatter)
 
-logger.addHandler(error_logger)
 logger.addHandler(info_logger)
 
 def bot_polling():
@@ -65,24 +62,35 @@ def bot_actions():
         bot.reply_to(message, 'Если у вас есть вопросы по боту,вы можете написать разработчику в телеграмме @vlad1k11 или на электронную почту: vlad1k121@yandex.ru.')
         logger.info(f'Send help message to user [{message.from_user.username}] with id: [{message.chat.id}]')
 
+    @bot.message_handler(commands=['getcount'])
+    def get_chat_members_count(message):
+        if (message.from_user.id != AUTHOR_ID):
+            return
+        members_count = bot.get_chat_members_count(message.chat.id)
+        bot.send_message(AUTHOR_ID, f'There are {members_count} users to used bot.')
+
     @bot.message_handler(commands=['sendmessage'])
     def send_message(message):
-        if (message.from_user.id == AUTHOR_ID):
-            arg = message.split()[1:]
-            recipient_id = arg[0]
-            text = ' '.join(arg[1:])
-            bot.send_message(recipient_id, text)
+        if (message.from_user.id != AUTHOR_ID):
+            return
+        arg = message.split()[1:]
+        recipient_id = arg[0]
+        text = ' '.join(arg[1:])
+        bot.send_message(recipient_id, text)
     
     @bot.message_handler(commands=["getuser"])
     def get_user(message):
-        if (message.from_user.id == AUTHOR_ID):
-            arg = message.split()
-            if (len(arg) != 2):
-                bot.send_message(AUTHOR_ID, 'not valid command')
-                return
-            user_id = arg[1]
-            user_info = bot.get_chat_member(user_id, user_id).user
-            bot.send_message(AUTHOR_ID, "Id: " + str(user_info.id) + "\nFirst Name: " + str(user_info.first_name) + "\nLast Name: " + str(user_info.last_name) +"\nUsername: @" + str(user_info.username))
+        if (message.from_user.id != AUTHOR_ID):
+            return
+
+        arg = message.split()
+        if (len(arg) != 2):
+            bot.send_message(AUTHOR_ID, 'not valid command')
+            return
+    
+        user_id = arg[1]
+        user_info = bot.get_chat_member(user_id, user_id).user
+        bot.send_message(AUTHOR_ID, "Id: " + str(user_info.id) + "\nFirst Name: " + str(user_info.first_name) + "\nLast Name: " + str(user_info.last_name) +"\nUsername: @" + str(user_info.username))
     
     @bot.message_handler(content_types=['text'])
     def get_egks_info(message):
