@@ -60,20 +60,25 @@ def bot_actions():
         bot.reply_to(message, 'Привет, чтобы получить данные о карте ЕГКС просто отправь боту ее номер в формате:\n xxx xxx xxx либо xxx xxx (без префикса из 000).')
         logger.info(f'Said hi to user [{message.from_user.username}] with id: [{message.chat.id}]')
 
-    
+    @bot.message_handler(commands=['send_message'])
+    def send_message(message):
+        if (message.from_user.id == AUTHOR_ID):
+            arg = message.split()[1:]
+            recipient_id = arg[0]
+            text = ' '.join(arg[1:])
+            bot.send_message(recipient_id, text)
 
     @bot.message_handler(commands=['help'])
     def help(message):
-        bot.reply_to(message, 'Если у вас есть вопросы по боту,\n вы можете написать разработчику в телеграмме @vlad1k11 или на электронную почту: vlad1k121@yandex.ru.')
+        bot.reply_to(message, 'Если у вас есть вопросы по боту,вы можете написать разработчику в телеграмме @vlad1k11 или на электронную почту: vlad1k121@yandex.ru.')
         logger.info(f'Send help message to user [{message.from_user.username}] with id: [{message.chat.id}]')
     
-    @bot.message_handler(commands=["getuser"])
-    def answer(message):
+    @bot.message_handler(commands=["get_user"])
+    def get_user(message):
         if (message.from_user.id == AUTHOR_ID):
             user_id = int(message.text.split(maxsplit=1)[1])
             user_info = bot.get_chat_member(user_id, user_id).user
-            bot.send_message(AUTHOR_ID, "Id: " + str(user_info.id) + "\nFirst Name: " + str(user_info.first_name) + "\nLast Name: " + str(user_info.last_name) +
-                            "\nUsername: @" + str(user_info.username))
+            bot.send_message(AUTHOR_ID, "Id: " + str(user_info.id) + "\nFirst Name: " + str(user_info.first_name) + "\nLast Name: " + str(user_info.last_name) +"\nUsername: @" + str(user_info.username))
     
     @bot.message_handler(content_types=['text'])
     def get_egks_info(message):
