@@ -11,6 +11,7 @@ import telebot
 import os
 from requests.packages import urllib3
 from dotenv import load_dotenv
+from telebot import types
 
 # todo исправить логирование
 # todo вынести проверку автора в декоратор
@@ -143,7 +144,9 @@ def bot_actions():
             bot.send_message(
                 chat_id=chat_id, text=f'Карта с номером {card_number} не найдена либо неактивна')
         else:
-            bot.send_message(chat_id=chat_id, text=result_message)
+            markup = types.ReplyKeyboardMarkup()
+            markup.add(types.KeyboardButton(card_number))
+            bot.send_message(chat_id=chat_id, text=result_message,reply_markup=markup)
 
         result_message = result_message.replace("\n", " | ")
         logging.info(
