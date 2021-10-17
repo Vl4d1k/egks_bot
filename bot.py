@@ -77,7 +77,7 @@ def bot_actions():
     def get_user(message):
         if (message.from_user.id == AUTHOR_ID):
             arg = message.split()
-            if (len() != 2):
+            if (len(arg) != 2):
                 bot.send_message(AUTHOR_ID, 'not valid command')
                 return
             user_id = arg[1]
