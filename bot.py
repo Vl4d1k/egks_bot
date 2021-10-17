@@ -21,10 +21,10 @@ load_dotenv()
 
 API_TOKEN = os.getenv('API_TOKEN')
 
-BOT_INTERVAL = os.getenv('BOT_INTERVAL')
-BOT_TIMEOUT = os.getenv('BOT_TIMEOUT')
+BOT_INTERVAL = int(os.getenv('BOT_INTERVAL'))
+BOT_TIMEOUT = int(os.getenv('BOT_TIMEOUT'))
 
-AUTHOR_ID = os.getenv('AUTHOR_ID')
+AUTHOR_ID = int(os.getenv('AUTHOR_ID'))
 
 log_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'log.log')
 logging.basicConfig(filename=log_path,
@@ -32,7 +32,6 @@ logging.basicConfig(filename=log_path,
                     format='%(asctime)s - %(levelname)s - %(message)s',
                     datefmt='%H:%M:%S',
                     level=logging.INFO)
-
 
 def main():
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -87,7 +86,7 @@ def bot_actions():
     def send_message(message):
         if (message.from_user.id != AUTHOR_ID):
             return
-        arg = message.split()[1:]
+        arg = message.text.split()[1:]
         recipient_id = arg[0]
         text = ' '.join(arg[1:])
         bot.send_message(recipient_id, text)
@@ -97,7 +96,7 @@ def bot_actions():
         if (message.from_user.id != AUTHOR_ID):
             return
 
-        arg = message.split()
+        arg = message.text.split()
         if (len(arg) != 2):
             bot.send_message(AUTHOR_ID, 'not valid command')
             return
