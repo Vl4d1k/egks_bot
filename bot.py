@@ -65,7 +65,7 @@ def bot_actions():
         bot.reply_to(message, 'Если у вас есть вопросы по боту,вы можете написать разработчику в телеграмме @vlad1k11 или на электронную почту: vlad1k121@yandex.ru.')
         logger.info(f'Send help message to user [{message.from_user.username}] with id: [{message.chat.id}]')
 
-    @bot.message_handler(commands=['send_message'])
+    @bot.message_handler(commands=['sendmessage'])
     def send_message(message):
         if (message.from_user.id == AUTHOR_ID):
             arg = message.split()[1:]
@@ -73,10 +73,14 @@ def bot_actions():
             text = ' '.join(arg[1:])
             bot.send_message(recipient_id, text)
     
-    @bot.message_handler(commands=["get_user"])
+    @bot.message_handler(commands=["getuser"])
     def get_user(message):
         if (message.from_user.id == AUTHOR_ID):
-            user_id = int(message.text.split(maxsplit=1)[1])
+            arg = message.split()
+            if (len() != 2):
+                bot.send_message(AUTHOR_ID, 'not valid command')
+                return
+            user_id = arg[1]
             user_info = bot.get_chat_member(user_id, user_id).user
             bot.send_message(AUTHOR_ID, "Id: " + str(user_info.id) + "\nFirst Name: " + str(user_info.first_name) + "\nLast Name: " + str(user_info.last_name) +"\nUsername: @" + str(user_info.username))
     
