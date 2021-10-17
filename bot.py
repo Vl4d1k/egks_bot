@@ -59,6 +59,11 @@ def bot_actions():
     def send_welcome(message):
         bot.reply_to(message, 'Привет, чтобы получить данные о карте ЕГКС просто отправь боту ее номер в формате:\n xxx xxx xxx либо xxx xxx (без префикса из 000).')
         logger.info(f'Said hi to user [{message.from_user.username}] with id: [{message.chat.id}]')
+    
+    @bot.message_handler(commands=['help'])
+    def help(message):
+        bot.reply_to(message, 'Если у вас есть вопросы по боту,вы можете написать разработчику в телеграмме @vlad1k11 или на электронную почту: vlad1k121@yandex.ru.')
+        logger.info(f'Send help message to user [{message.from_user.username}] with id: [{message.chat.id}]')
 
     @bot.message_handler(commands=['send_message'])
     def send_message(message):
@@ -67,11 +72,6 @@ def bot_actions():
             recipient_id = arg[0]
             text = ' '.join(arg[1:])
             bot.send_message(recipient_id, text)
-
-    @bot.message_handler(commands=['help'])
-    def help(message):
-        bot.reply_to(message, 'Если у вас есть вопросы по боту,вы можете написать разработчику в телеграмме @vlad1k11 или на электронную почту: vlad1k121@yandex.ru.')
-        logger.info(f'Send help message to user [{message.from_user.username}] with id: [{message.chat.id}]')
     
     @bot.message_handler(commands=["get_user"])
     def get_user(message):
