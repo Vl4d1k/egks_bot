@@ -139,7 +139,7 @@ def bot_actions():
             f'https://www.egks.ru/card?number={card_number}', verify=False)
         soup = BeautifulSoup(response.text, 'html.parser')
 
-        result_message = str(soup.find('p')).replace(
+        result_message = str(soup.select_one('div p:nth-of-type(2)')).replace(
             '<br/>', '\n').replace('<p>', '').replace('</p>', '')
         if (len(result_message) == 0):
             bot.send_message(
