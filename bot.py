@@ -12,6 +12,7 @@ import os
 from requests.packages import urllib3
 from dotenv import load_dotenv
 from telebot import types
+import sqlite3
 
 # todo исправить логирование
 # todo вынести проверку автора в декоратор
@@ -35,9 +36,19 @@ logging.basicConfig(filename=log_path,
                     datefmt='%H:%M:%S',
                     level=logging.INFO)
 
+
 def main():
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    global con
+    con = sqlite3.connect('example.db')
     bot_polling()
+
+
+def create_tables():
+    global con
+    cur = con.cursor()
+    cur.execute('''CREATE TABLE IF NOT EXISTS users(user_id INT, card_id INT, UNIQUE(user_id, card_id))''')
+    con.commit()
 
 
 def bot_polling():
@@ -110,6 +121,7 @@ def bot_actions():
 
     @bot.message_handler(content_types=['text'])
     def get_egks_info(message):
+        global con
 
         card_number = message.text.replace(" ", "")
         chat_id = message.chat.id
@@ -135,17 +147,17 @@ def bot_actions():
                 chat_id=chat_id, text='Номер карты должен состоять из 6 либо 9 символов')
             return
 
-        response = requests.post(
-            f'https://www.egks.ru/card?number={card_number}', verify=False)
-        soup = BeautifulSoup(response.text, 'html.parser')
-
         result_message = str(soup.select_one('div p:nth-of-type(2)')).replace(
             '<br/>', '\n').replace('<p>', '').replace('</p>', '')
         if (len(result_message) == 0):
             bot.send_message(
                 chat_id=chat_id, text=f'Карта с номером {card_number} не найдена либо неактивна')
         else:
-            markup = types.ReplyKeyboardMarkup()
+            cur = con.cursor()
+            cur.execute('INSERT INTO users VALUES (?, ?)', chat_id, int(card_number))
+            cur.commit()
+     
+            markup = types.ReplyKeyboardMarkup(row_width=1)
             markup.add(types.KeyboardButton(card_number))
             bot.send_message(chat_id=chat_id, text=result_message,reply_markup=markup)
 
