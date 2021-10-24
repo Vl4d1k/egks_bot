@@ -117,9 +117,8 @@ def bot_actions():
         last_name = message.from_user.last_name
         username = message.from_user.username
 
-        inline_message = message.text.replace("\n", " | ")
         logging.info(
-            f'{first_name} {last_name} [{username}] [{chat_id}] send message: [{inline_message}].')
+            f'{first_name} {last_name} [{username}] [{chat_id}] send message: [{message.text}].')
 
         if (not card_number.isdecimal()):
             logging.info(
@@ -142,16 +141,15 @@ def bot_actions():
         result_message = str(soup.select_one('div p:nth-of-type(2)')).replace(
             '<br/>', '\n').replace('<p>', '').replace('</p>', '')
         if (len(result_message) == 0):
-            bot.send_message(
-                chat_id=chat_id, text=f'Карта с номером {card_number} не найдена либо неактивна')
+            result_message = soup.select_one('h3').getText()
+            bot.send_message(chat_id=chat_id, text=result_message)
         else:
             markup = types.ReplyKeyboardMarkup()
             markup.add(types.KeyboardButton(card_number))
             bot.send_message(chat_id=chat_id, text=result_message,reply_markup=markup)
 
         result_message = result_message.replace("\n", " | ")
-        logging.info(
-            f'Send message: [{result_message}] to user [{username}] [{chat_id}]')
+        logging.info(f'Send message: [{result_message}] to user [{username}] [{chat_id}]')
 
 
 if __name__ == '__main__':
