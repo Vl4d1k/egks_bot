@@ -35,6 +35,7 @@ logging.basicConfig(filename=log_path,
                     datefmt='%H:%M:%S',
                     level=logging.INFO)
 
+
 def main():
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     bot_polling()
@@ -80,7 +81,7 @@ def bot_actions():
     def send_message(message):
         if (message.from_user.id != AUTHOR_ID):
             return
-        
+
         args = message.text.split()
         recipient_id = args[1]
         if (recipient_id.isdecimal()):
@@ -99,12 +100,8 @@ def bot_actions():
         if (len(args) != 2):
             bot.send_message(AUTHOR_ID, 'not valid command')
             return
-        
+
         user_id = args[1]
-        if (user_id.isdecimal()):
-            bot.send_message(AUTHOR_ID, 'not valid user id')
-            return
-        
         user_info = bot.get_chat_member(user_id, user_id).user
         bot.send_message(AUTHOR_ID, "Id: " + str(user_info.id) + "\nFirst Name: " + str(user_info.first_name) +
                          "\nLast Name: " + str(user_info.last_name) + "\nUsername: @" + str(user_info.username))
@@ -139,18 +136,20 @@ def bot_actions():
             f'https://www.egks.ru/card?number={card_number}', verify=False)
         soup = BeautifulSoup(response.text, 'html.parser')
 
-        result_message = str(soup.select_one('div p:nth-of-type(2)')).replace(
-            '<br/>', '\n').replace('<p>', '').replace('</p>', '')
-        if (len(result_message) == 0):
+        result_message = str(soup.select_one('div p:nth-of-type(2)')
+                            ).replace('<br/>', '\n').replace('<p>', '').replace('</p>', '')
+        if (len(result_message) == 0 or result_message == 'None'):
             result_message = soup.select_one('h3').getText()
             bot.send_message(chat_id=chat_id, text=result_message)
         else:
             markup = types.ReplyKeyboardMarkup()
             markup.add(types.KeyboardButton(card_number))
-            bot.send_message(chat_id=chat_id, text=result_message,reply_markup=markup)
+            bot.send_message(
+                chat_id=chat_id, text=result_message, reply_markup=markup)
 
         result_message = result_message.replace("\n", " | ")
-        logging.info(f'Send message: [{result_message}] to user [{username}] [{chat_id}]')
+        logging.info(
+            f'Send message: [{result_message}] to user [{username}] [{chat_id}]')
 
 
 if __name__ == '__main__':
