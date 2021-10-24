@@ -16,8 +16,8 @@ from telebot import types
 # todo исправить логирование
 # todo вынести проверку автора в декоратор
 # todo сделать автодеплой на сервер
-# todo добавить карточки для созранения карт
 # todo обновление баланса по крону
+# todo добавить базу
 
 load_dotenv()
 
@@ -66,7 +66,7 @@ def bot_actions():
     @bot.message_handler(commands=['start'])
     def send_welcome(message):
         bot.reply_to(
-            message, 'Привет, чтобы получить данные о карте ЕГКС просто отправь боту ее номер в формате:\n xxx xxx xxx либо xxx xxx (без префикса из 000).')
+            message, 'Привет, чтобы получить данные о карте ЕГКС просто отправь боту ее номер в формате:\n xxx xxx xxx либо xxx xxx (без префикса из 000). Если у вас есть вопросы по боту,вы можете написать разработчику в телеграмме @vlad1k11 или на электронную почту: vlad1k121@yandex.ru.')
         logging.info(
             f'Said hi to user [{message.from_user.username}] with id: [{message.chat.id}]')
 
@@ -76,21 +76,18 @@ def bot_actions():
         logging.info(
             f'Send help message to user [{message.from_user.username}] with id: [{message.chat.id}]')
 
-    @bot.message_handler(commands=['getcount'])
-    def get_chat_members_count(message):
-        if (message.from_user.id != AUTHOR_ID):
-            return
-        members_count = bot.get_chat_members_count(message.chat.id)
-        bot.send_message(
-            AUTHOR_ID, f'There are {members_count} users to used bot.')
-
     @bot.message_handler(commands=['sendmessage'])
     def send_message(message):
         if (message.from_user.id != AUTHOR_ID):
             return
-        arg = message.text.split()[1:]
-        recipient_id = arg[0]
-        text = ' '.join(arg[1:])
+        
+        args = message.text.split()
+        recipient_id = args[1]
+        if (recipient_id.isdecimal()):
+            bot.send_message(AUTHOR_ID, 'not valid recipient id')
+            return
+
+        text = ' '.join(args[2:])
         bot.send_message(recipient_id, text)
 
     @bot.message_handler(commands=["getuser"])
@@ -98,12 +95,16 @@ def bot_actions():
         if (message.from_user.id != AUTHOR_ID):
             return
 
-        arg = message.text.split()
-        if (len(arg) != 2):
+        args = message.text.split()
+        if (len(args) != 2):
             bot.send_message(AUTHOR_ID, 'not valid command')
             return
-
-        user_id = arg[1]
+        
+        user_id = args[1]
+        if (user_id.isdecimal()):
+            bot.send_message(AUTHOR_ID, 'not valid user id')
+            return
+        
         user_info = bot.get_chat_member(user_id, user_id).user
         bot.send_message(AUTHOR_ID, "Id: " + str(user_info.id) + "\nFirst Name: " + str(user_info.first_name) +
                          "\nLast Name: " + str(user_info.last_name) + "\nUsername: @" + str(user_info.username))
