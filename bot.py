@@ -12,6 +12,7 @@ import os
 from requests.packages import urllib3
 from dotenv import load_dotenv
 from telebot import types
+from logging.handlers import TimedRotatingFileHandler
 
 # todo исправить логирование
 # todo вынести проверку автора в декоратор
@@ -29,16 +30,22 @@ BOT_TIMEOUT = int(os.getenv('BOT_TIMEOUT'))
 AUTHOR_ID = int(os.getenv('AUTHOR_ID'))
 
 log_name = 'log.log'
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', '%H:%M:%S')
 log_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), log_name)
 logging.basicConfig(filename=log_path,
                     filemode='a',
                     format='%(asctime)s - %(levelname)s - %(message)s',
                     datefmt='%H:%M:%S',
-                    level=logging.info)
+                    level=logging.INFO)
 
-logger = logging.getLogger('my_app')
+logger = logging.getLogger(log_name)
 
-handler = logging.handlers.TimedRotatingFileHandler(logname, when="midnight", interval=1)
+file_handler = logging.FileHandler(log_name)
+file_handler.setFormatter(formatter)
+file_handler.setLevel(logging.INFO)
+logger.addHandler(file_handler)
+
+handler = TimedRotatingFileHandler(log_name, when="midnight", interval=1)
 handler.suffix = "%Y%m%d"
 logger.addHandler(handler)
 
@@ -49,22 +56,22 @@ def main():
 
 def bot_polling():
     global bot
-    logger.info('Starting bot polling now')
+    logging.info('Starting bot polling now')
     while True:
         try:
-            logger.info('New bot instance started')
+            logging.info('New bot instance started')
             bot = telebot.TeleBot(API_TOKEN)
             bot_actions()
             bot.polling(none_stop=True, interval=BOT_INTERVAL,
                         timeout=BOT_TIMEOUT)
         except Exception as ex:
-            logger.info(
+            logging.info(
                 f'Bot polling failed, restarting in {BOT_TIMEOUT} sec. Error: {ex}')
             bot.stop_polling()
             time.sleep(BOT_TIMEOUT)
         else:
             bot.stop_polling()
-            logger.info('Bot polling loop finished')
+            logging.info('Bot polling loop finished')
             break
 
 
@@ -74,13 +81,13 @@ def bot_actions():
     def send_welcome(message):
         bot.reply_to(
             message, 'Привет, чтобы получить данные о карте ЕГКС просто отправь боту ее номер в формате:\n xxx xxx xxx либо xxx xxx (без префикса из 000).')
-        logger.info(
+        logging.info(
             f'Said hi to user [{message.from_user.username}] with id: [{message.chat.id}]')
 
     @bot.message_handler(commands=['help'])
     def help(message):
         bot.reply_to(message, 'Если у вас есть вопросы по боту,вы можете написать разработчику в телеграмме @vlad1k11 или на электронную почту: vlad1k121@yandex.ru.')
-        logger.info(
+        logging.info(
             f'Send help message to user [{message.from_user.username}] with id: [{message.chat.id}]')
 
     @bot.message_handler(commands=['getcount'])
@@ -125,18 +132,18 @@ def bot_actions():
         username = message.from_user.username
 
         inline_message = message.text.replace("\n", " | ")
-        logger.info(
+        logging.info(
             f'{first_name} {last_name} [{username}] [{chat_id}] send message: [{inline_message}].')
 
         if (not card_number.isdecimal()):
-            logger.info(
+            logging.info(
                 f'Not valid card number [{card_number}] from user [{chat_id}].')
             bot.send_message(
                 chat_id=chat_id, text='Номер карты должен состоять только из чисел')
             return
 
         if (len(card_number) != 6 and len(card_number) != 9):
-            logger.info(
+            logging.info(
                 f'Not valid card number [{card_number}] from user [{chat_id}].')
             bot.send_message(
                 chat_id=chat_id, text='Номер карты должен состоять из 6 либо 9 символов')
@@ -157,7 +164,7 @@ def bot_actions():
             bot.send_message(chat_id=chat_id, text=result_message,reply_markup=markup)
 
         result_message = result_message.replace("\n", " | ")
-        logger.info(
+        logging.info(
             f'Send message: [{result_message}] to user [{username}] [{chat_id}]')
 
 
